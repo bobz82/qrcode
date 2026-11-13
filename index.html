@@ -145,7 +145,7 @@
         <label for="sheet-url">URL Web App Apps Script</label><input id="sheet-url" type="url" placeholder="https://script.google.com/macros/s/.../exec" required>
         <label for="sheet-api-key">API key</label><input id="sheet-api-key" type="password" autocomplete="off" placeholder="64 karakter — salin nilai key saja" required>
         <p class="form-error" id="sheet-config-error" role="status"></p>
-        <p class="settings-warning">API key disimpan di browser ini dan tidak ditanam di kode GitHub. Jangan gunakan endpoint ini untuk data sensitif: akses Web App publik dan key dapat disalahgunakan jika dibagikan.</p>
+        <p class="settings-warning">Agar semua pengunjung tersambung otomatis, URL dan API key harus diisi di konstanta PUBLIC_SHEETS_CONFIG pada app.js. Key tersebut akan terlihat publik; gunakan hanya untuk spreadsheet demo/non-sensitif.</p>
         <div class="modal-actions"><button class="button button-secondary" type="button" id="disconnect-sheets">Putuskan</button><button class="button button-primary" type="submit">Simpan &amp; hubungkan</button></div>
       </form>
     </section>
