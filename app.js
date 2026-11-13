@@ -31,6 +31,8 @@
   let sheetSyncing = false;
   let sheetOutboxTask = null;
   let sheetRetryTimer = null;
+  let scanAudioContext = null;
+  let scanAudioUnavailable = false;
 
   function loadDatabase() {
     try {
@@ -304,6 +306,66 @@
 
   function syncMutation(action, payload) {
     queueSheetMutation(action, payload);
+  }
+
+  function prepareScanAudio() {
+    const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextConstructor) {
+      scanAudioUnavailable = true;
+      return;
+    }
+    try {
+      if (!scanAudioContext) scanAudioContext = new AudioContextConstructor();
+      if (scanAudioContext.state === "suspended") {
+        scanAudioContext.resume().catch((error) => {
+          console.error("Audio context tidak dapat diaktifkan:", error);
+          scanAudioUnavailable = true;
+        });
+      }
+    } catch (error) {
+      console.error("Audio context tidak dapat dibuat:", error);
+      scanAudioUnavailable = true;
+    }
+  }
+
+  function playScanSound() {
+    if (scanAudioUnavailable || !scanAudioContext) {
+      showToast("Scan berhasil dicatat, tetapi suara tidak tersedia di browser ini.");
+      return;
+    }
+
+    const playTone = () => {
+      try {
+        const now = scanAudioContext.currentTime;
+        const oscillator = scanAudioContext.createOscillator();
+        const gain = scanAudioContext.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(880, now);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.16, now + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+        oscillator.connect(gain);
+        gain.connect(scanAudioContext.destination);
+        oscillator.onended = () => {
+          oscillator.disconnect();
+          gain.disconnect();
+        };
+        oscillator.start(now);
+        oscillator.stop(now + 0.16);
+      } catch (error) {
+        console.error("Bunyi scan gagal diputar:", error);
+        showToast("Scan berhasil dicatat, tetapi bunyi konfirmasi gagal diputar.");
+      }
+    };
+
+    if (scanAudioContext.state === "running") {
+      playTone();
+    } else {
+      scanAudioContext.resume().then(playTone).catch((error) => {
+        console.error("Audio context tidak dapat dilanjutkan:", error);
+        showToast("Scan berhasil dicatat, tetapi browser memblokir bunyi konfirmasi.");
+      });
+    }
   }
 
   function setAuthenticated(authenticated) {
@@ -610,6 +672,7 @@
     renderScanResult(scan);
     syncMutation("appendScan", { record: scan });
     showToast(`Scan ${qr.code} berhasil dicatat.`);
+    playScanSound();
     return true;
   }
 
@@ -629,6 +692,7 @@
   $("#manual-scan-form").addEventListener("submit", (event) => {
     event.preventDefault();
     const input = $("#manual-code");
+    prepareScanAudio();
     if (recordScan(input.value, "manual")) input.value = "";
   });
 
@@ -642,6 +706,7 @@
       $("#camera-error").textContent = "Kamera memerlukan HTTPS atau localhost dan izin akses kamera.";
       return;
     }
+    prepareScanAudio();
     scanner = new Html5Qrcode("reader");
     try {
       await scanner.start(

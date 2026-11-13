@@ -9,7 +9,7 @@ Website statis untuk mengelola QR dummy, mencoba login demo, dan mencatat waktu 
 
 ## Jalankan lokal
 
-Buka `index.html` di browser untuk mencoba fitur tanpa kamera. Agar scanner kamera berfungsi, jalankan di `localhost` atau melalui HTTPS, lalu izinkan akses kamera. Pada halaman Data QR, klik gambar QR untuk melihat atau mengunduh versi PNG; nilai Kode / ID adalah isi QR yang dikenali scanner.
+Buka `index.html` di browser untuk mencoba fitur tanpa kamera. Scan QR yang terdaftar akan membunyikan nada konfirmasi singkat. Agar scanner kamera berfungsi, jalankan di `localhost` atau melalui HTTPS, lalu izinkan akses kamera. Pada halaman Data QR, klik gambar QR untuk melihat atau mengunduh versi PNG; nilai Kode / ID adalah isi QR yang dikenali scanner.
 
 ## Siapkan Google Sheets
 
